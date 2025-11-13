@@ -6,12 +6,12 @@ namespace OnlineShop.Requests
 {
     public class ChangeUser
     {
-        public string UserName { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
+        public string UserName { get; set; } 
+        public string Description { get; set; } 
         public string? Email { get; set; }
         public string? Address { get; set; }
         public string Login1 { get; set; }
-        public string Password { get; set; }
+        public string PhoneNumber { get; set; }
 
     }
 }

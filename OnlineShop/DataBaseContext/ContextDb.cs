@@ -17,5 +17,6 @@ namespace OnlineShop.DataBaseContext
         public DbSet<Session> Sessions { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderStatus> OrdersStatus { get; set; }
+        public DbSet<BasketItem> BasketItems { get; set; }
     }
 }

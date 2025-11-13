@@ -9,7 +9,7 @@ namespace OnlineShop.Models
     {
         [Key]
         public int IdSession { get; set; }
-        public string Token { get; set; } = string.Empty;
+        public string Token { get; set; }
         [Required]
         [ForeignKey("IdUser")]
         public int IdUser { get; set; }

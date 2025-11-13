@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineShop.Intrefaces;
+using OnlineShop.CustomAtributes;
 
 namespace OnlineShop.Controllers
 {
@@ -12,6 +13,7 @@ namespace OnlineShop.Controllers
         }
         [HttpGet]
         [Route("get/items")]
+        [RoleAuthAtribute([1, 2])]
         public async Task<IActionResult> GetItems(string NameItem, string NameCategory)
         {
             return await _shopService.GetItems(NameItem, NameCategory);

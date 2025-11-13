@@ -17,8 +17,8 @@ namespace OnlineShop.UniversalMethods
         {
             var claims = new[]
             {
-                   new Claim("userId", user.IdUser.ToString()),
-                   new Claim("roleId", user.IdRole.ToString()),
+                   new Claim("UserId", user.IdUser.ToString()),
+                   new Claim("RoleId", user.IdRole.ToString()),
                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                    new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToString()),
             };
@@ -26,7 +26,7 @@ namespace OnlineShop.UniversalMethods
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(claims: claims, signingCredentials: creds);
             return new JwtSecurityTokenHandler().WriteToken(token);
-            //sdf
+            
         }
     }
 }

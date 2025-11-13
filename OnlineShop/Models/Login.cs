@@ -8,7 +8,7 @@ namespace OnlineShop.Models
         [Key]
         public int IdLogin { get; set; }
         public string Login1 { get; set; } = string.Empty;
-        public string password { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
         [Required]
         [ForeignKey("IdUser")]
         public int IdUser { get; set; }

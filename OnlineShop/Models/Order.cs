@@ -8,12 +8,13 @@ namespace OnlineShop.Models
         [Key]
         public int IdOrder { get; set; }
         public OrderStatus status { get; set; }
-        public Basket basket { get; set; }
-        [Required]
-        [ForeignKey("IdBasket")]
-        public int IdBasket { get; set; }
         [Required]
         [ForeignKey("IdStatus")]
         public int IdStatus { get; set; }
+        [Required]
+        [ForeignKey("orderbasket")]
+        public int IdBasket { get; set; }
+        public Basket basket { get; set; }
+
     }
 }
