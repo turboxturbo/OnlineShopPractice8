@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using OnlineShop.DataBaseContext;
 using OnlineShop.Intrefaces;
 using OnlineShop.Models;
@@ -67,7 +68,7 @@ namespace OnlineShop.Services
 
         public async Task<IActionResult> GetAllUsersAsync()
         {
-            var users = _contextDb.Users.ToList();
+            var users = _contextDb.Users.FirstOrDefaultAsync();
             return new OkObjectResult(new
             {
                 data = new { users = users },
@@ -75,7 +76,7 @@ namespace OnlineShop.Services
             });
         }
 
-        public async Task<IActionResult> GetItems(string NameItem, string NameCategory) //получить товары
+        public async Task<IActionResult> GetItems(string NameItem, string NameCategory) //получить товары sort
         {
             var items = _contextDb.Items.Include(i => i.category).AsQueryable();
             if (!string.IsNullOrEmpty(NameItem) && !string.IsNullOrEmpty(NameCategory))
@@ -92,7 +93,7 @@ namespace OnlineShop.Services
                 status = true
             });
         }
-        public async Task<IActionResult> AddItemInBAsket(int idtem, string quantity)
+        public async Task<IActionResult> AddItemInBasket(int idtem, string quantity)
         {
             var item = _contextDb.Items.Include(i => i.IdItem ==  idtem).FirstOrDefault();
             var userid = _httpContextAccessor.HttpContext?.User;
@@ -206,19 +207,103 @@ namespace OnlineShop.Services
             };
             _contextDb.Add(newitem);
             await _contextDb.SaveChangesAsync();
+            return new OkObjectResult(new { data = items, status = true });
         }
         public async Task<IActionResult> ChangeItem (ChangeItem changeItem, int iditem) // изменить товар (менеджер)
         {
-            var items = _contextDb.Items.Include(i => i.IdItem == iditem).FirstOrDefaultAsync();
+            var items = _contextDb.Items.Where(i => i.IdItem == iditem).FirstOrDefaultAsync();
             items.IdCategory = changeItem.IdCategory;
-                NameItem = changeItem.NameItem;
-            DescriptionItem = changeItem.DescriptionItem;
-            Price = changeItem.Price;
-            Stock = changeItem.Stock;
-            isActive = changeItem.isActive;
-            createdat = DateTime.Now;
-            
+            items.NameItem = changeItem.NameItem;
+            items.DescriptionItem = changeItem.DescriptionItem;
+            items.Price = changeItem.Price;
+            items.Stock = changeItem.Stock;
+            items.isActive = changeItem.isActive;
+            items.createdat = DateTime.Now;
+            await _contextDb.SaveChangesAsync();
+            return new OkObjectResult(new { data = items, status = true });
         }
+        public async Task<IActionResult> GetOrdersStatus() // получить заказы и их статусы
+        {
+            var orders = _contextDb.Orders.Include(o => o.status).FirstOrDefaultAsync();
+            return new OkObjectResult(new { data = orders, status = true });
+        }
+        public async Task<IActionResult> ChangeOrders(int idorder, ChangeOrderStatus changeOrderStatus) // изменить статус заказа 
+        {
+            var orders = await _contextDb.Orders.Include(o => o.status).Where(o => o.IdOrder == idorder).FirstOrDefaultAsync();
+            orders.IdStatus = changeOrderStatus.IdStatus;
+            return new OkObjectResult(new { data = orders, status = true });
+        }
+        public async Task<IActionResult> ChangeUserMen(ChangeUser changeUser) // изменить самого себя (менеджер)
+        {
+            var userid = _httpContextAccessor.HttpContext?.User;
+            var userIdClaim = int.Parse(userid?.FindFirst("UserId").Value);
+            var user = await _contextDb.Logins.Include(u=>u.user).Where(u => u.IdUser == userIdClaim).FirstOrDefaultAsync();
+            user.Login1 = changeUser.Login1;
+            user.Password = changeUser.Password;
+            user.user.Address = changeUser.Address;
+            user.user.PhoneNumber = changeUser.PhoneNumber;
+            user.user.updatedat = DateTime.Now;
+            user.user.UserName = changeUser.UserName;
+            user.user.Description = changeUser.Description;
+            user.user.Email = changeUser.Email;
+            await _contextDb.SaveChangesAsync();
+            return new OkObjectResult(new { data = user, status = true });
+        }
+        public async Task<IActionResult> GetEmployees() // получить всех сотрудником (админ)
+        {
+            var employees = _contextDb.Users.Include(u => u.IdRole == 1 || u.IdRole == 3).FirstOrDefaultAsync();
+            return new OkObjectResult(new { data = employees, status = true });
+        }
+        public async Task<IActionResult> DelEmployees(int iduser) // удалить сотрудника (админ)
+        {
+            var employees = _contextDb.Users.Include(u => u.IdRole == 1 || u.IdRole == 3).Where(u =>u.IdUser==iduser).FirstOrDefaultAsync();
+            _contextDb.Remove(employees);
+            await _contextDb.SaveChangesAsync();
+            return new OkObjectResult(new { data = employees, status = true });
+        }
+        public async Task<IActionResult> ChangeEmployee(int idemployee, ChangeUser changeUser)
+        {
+            var user = await _contextDb.Logins.Include(u => u.user).Where(u => u.IdUser == idemployee).FirstOrDefaultAsync();
+            user.Login1 = changeUser.Login1;
+            user.Password = changeUser.Password;
+            user.user.Address = changeUser.Address;
+            user.user.PhoneNumber = changeUser.PhoneNumber;
+            user.user.updatedat = DateTime.Now;
+            user.user.UserName = changeUser.UserName;
+            user.user.Description = changeUser.Description;
+            user.user.Email = changeUser.Email;
+            await _contextDb.SaveChangesAsync();
+            return new OkObjectResult(new { data = user, status = true });
+        }
+        public async Task<IActionResult> AddNewEmployee(ChangeUser addemployee, int idrole) // добавить нового юзера/сотрудника(admin)
+        {
+            var users = _contextDb.Logins.Include(u => u.user).FirstOrDefaultAsync();
+            var newuser = new Login
+            {
+                Login1 = addemployee.Login1,
+                Password = addemployee.Password,
+                user = new User
+                {
+                    Address = addemployee.Address,
+                    PhoneNumber = addemployee.PhoneNumber,
+                    updatedat = DateTime.Now,
+                    UserName = addemployee.UserName,
+                    Description = addemployee.Description,
+                    Email = addemployee.Email,
+                    IdRole = idrole
+                }
+
+            };
+            _contextDb.Add(newuser);
+            await _contextDb.SaveChangesAsync();
+            return new OkObjectResult(new { data = newuser, status = true });
+        }
+        public async Task<IActionResult> GetLogs() // получить все логи пользователей
+        {
+            var logs = await _contextDb.Sessions.FirstOrDefaultAsync();
+            return new OkObjectResult(new { data = logs, status = true });
+        }
+        
 
     }
 }

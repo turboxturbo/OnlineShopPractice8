@@ -12,6 +12,7 @@ namespace OnlineShop.Requests
         public string? Address { get; set; }
         public string Login1 { get; set; }
         public string PhoneNumber { get; set; }
+        public string Password { get; set; }
 
     }
 }
