@@ -10,9 +10,9 @@ namespace OnlineShop.Models
         [Required]
         [ForeignKey("userbasket")]
         public int IdUser { get; set; }
-        public User user { get; set; }
+        //public User user { get; set; }
         
-        public Order order { get; set; }
+        //public Order order { get; set; }
 
         
         

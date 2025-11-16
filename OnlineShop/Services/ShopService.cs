@@ -211,7 +211,7 @@ namespace OnlineShop.Services
         }
         public async Task<IActionResult> ChangeItem (ChangeItem changeItem, int iditem) // изменить товар (менеджер)
         {
-            var items = _contextDb.Items.Where(i => i.IdItem == iditem).FirstOrDefaultAsync();
+            var items = await _contextDb.Items.Where(i => i.IdItem == iditem).FirstOrDefaultAsync();
             items.IdCategory = changeItem.IdCategory;
             items.NameItem = changeItem.NameItem;
             items.DescriptionItem = changeItem.DescriptionItem;
