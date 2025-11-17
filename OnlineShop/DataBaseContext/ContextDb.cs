@@ -18,6 +18,7 @@ namespace OnlineShop.DataBaseContext
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderStatus> OrdersStatus { get; set; }
         public DbSet<BasketItem> BasketItems { get; set; }
+        public DbSet<PaymnetMethod> PaymnetMethods { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique(); // уникальность email

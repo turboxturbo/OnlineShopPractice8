@@ -15,7 +15,7 @@ namespace OnlineShop.Controllers
         [HttpGet]
         [Route("get/items")]
         [RoleAuthAtribute([1, 2])]
-        public async Task<IActionResult> GetItems(string NameItem, string NameCategory)
+        public async Task<IActionResult> GetItems([FromBody] string NameItem, string NameCategory)
         {
             return await _shopService.GetItems(NameItem, NameCategory);
         }
@@ -29,21 +29,21 @@ namespace OnlineShop.Controllers
         [HttpPost]
         [Route("adduser/admin")]
         [RoleAuthAtribute([3])]
-        public async Task<IActionResult> AddNewEmployee(ChangeUser addemployee, int idrole)
+        public async Task<IActionResult> AddNewEmployee([FromBody] ChangeUser addemployee, int idrole)
         {
             return await _shopService.AddNewEmployee(addemployee, idrole);
         }
         [HttpPut]
         [Route("changeemployee")]
         [RoleAuthAtribute([1,3])]
-        public async Task<IActionResult> ChangeEmployee(int idemployee, ChangeUser changeUser)
+        public async Task<IActionResult> ChangeEmployee([FromBody] int idemployee, ChangeUser changeUser)
         {
             return await _shopService.ChangeEmployee(idemployee, changeUser);
         }
         [HttpDelete]
         [Route("delemployee")]
         [RoleAuthAtribute([1,3])]
-        public async Task<IActionResult> DelEmployees(int iduser)
+        public async Task<IActionResult> DelEmployees([FromBody] int iduser)
         {
             return await _shopService.DelEmployees(iduser);
         }
@@ -57,7 +57,7 @@ namespace OnlineShop.Controllers
         [HttpPost]
         [Route("changeorders")]
         [RoleAuthAtribute([1, 3])]
-        public async Task<IActionResult> ChangeOrders(int idorder, ChangeOrderStatus changeOrderStatus)
+        public async Task<IActionResult> ChangeOrders([FromBody] int idorder, ChangeOrderStatus changeOrderStatus)
         {
             return await _shopService.ChangeOrders(idorder, changeOrderStatus);
         }
@@ -71,21 +71,21 @@ namespace OnlineShop.Controllers
         [HttpPut]
         [Route("changeitems")]
         [RoleAuthAtribute([1, 3])]
-        public async Task<IActionResult> ChangeItem(ChangeItem changeItem, int iditem)
+        public async Task<IActionResult> ChangeItem([FromBody] ChangeItem changeItem, int iditem)
         {
             return await _shopService.ChangeItem(changeItem, iditem);
         }
         [HttpPost]
         [Route("additems")]
         [RoleAuthAtribute([1, 3])]
-        public async Task<IActionResult> AddItems(ChangeItem changeItem)
+        public async Task<IActionResult> AddItems([FromBody] ChangeItem changeItem)
         {
             return await _shopService.AddItems(changeItem);
         }
         [HttpPut]
         [Route("changeusermen")]
         [RoleAuthAtribute([1])]
-        public async Task<IActionResult> ChangeUser(ChangeUser changeUser)
+        public async Task<IActionResult> ChangeUser([FromBody] ChangeUser changeUser)
         {
             return await _shopService.ChangeUser(changeUser);
         }
@@ -99,7 +99,7 @@ namespace OnlineShop.Controllers
         [HttpPut]
         [Route("changeprofile")]
         [RoleAuthAtribute([2])]
-        public async Task<IActionResult> ChangeUserAndLogin(ChangeUser changeUser)
+        public async Task<IActionResult> ChangeUserAndLogin([FromBody] ChangeUser changeUser)
         {
             return await _shopService.ChangeUserAndLogin(changeUser);
         }
@@ -120,7 +120,7 @@ namespace OnlineShop.Controllers
         [HttpPost]
         [Route("additeminbasket")]
         [RoleAuthAtribute([1, 2, 3])]
-        public async Task<IActionResult> AddItemInBasket(int idtem, string quantity)
+        public async Task<IActionResult> AddItemInBasket([FromBody] int idtem, string quantity)
         {
             return await _shopService.AddItemInBasket(idtem, quantity);
         }
@@ -134,14 +134,14 @@ namespace OnlineShop.Controllers
         [HttpPost]
         [Route("adduserorregistration")]
         [RoleAuthAtribute([1, 2, 3])]
-        public async Task<IActionResult> CreateNewUserAndLoginAsync(CreateNewUser newUser)
+        public async Task<IActionResult> CreateNewUserAndLoginAsync([FromBody] CreateNewUser newUser)
         {
             return await _shopService.CreateNewUserAndLoginAsync(newUser);
         }
         [HttpPost]
         [Route("auth")]
         [RoleAuthAtribute([1, 2, 3])]
-        public async Task<IActionResult> AuthUser(AuthUser logindata)
+        public async Task<IActionResult> AuthUser([FromBody] AuthUser logindata)
         {
             return await _shopService.AuthUser(logindata);
         }

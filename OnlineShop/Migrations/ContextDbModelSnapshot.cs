@@ -33,7 +33,15 @@ namespace OnlineShop.Migrations
                     b.Property<int>("IdUser")
                         .HasColumnType("int");
 
+                    b.Property<int>("userIdUser")
+                        .HasColumnType("int");
+
                     b.HasKey("IdBasket");
+
+                    b.HasIndex("IdUser")
+                        .IsUnique();
+
+                    b.HasIndex("userIdUser");
 
                     b.ToTable("Baskets");
                 });
@@ -144,7 +152,7 @@ namespace OnlineShop.Migrations
 
                     b.Property<string>("Login1")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -154,6 +162,9 @@ namespace OnlineShop.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("IdLogin");
+
+                    b.HasIndex("Login1")
+                        .IsUnique();
 
                     b.HasIndex("userIdUser");
 
@@ -171,10 +182,16 @@ namespace OnlineShop.Migrations
                     b.Property<int>("IdBasket")
                         .HasColumnType("int");
 
+                    b.Property<int>("IdMethod")
+                        .HasColumnType("int");
+
                     b.Property<int>("IdStatus")
                         .HasColumnType("int");
 
                     b.Property<int>("basketIdBasket")
+                        .HasColumnType("int");
+
+                    b.Property<int>("methodIdMethod")
                         .HasColumnType("int");
 
                     b.Property<int>("statusIdStatus")
@@ -183,6 +200,8 @@ namespace OnlineShop.Migrations
                     b.HasKey("IdOrder");
 
                     b.HasIndex("basketIdBasket");
+
+                    b.HasIndex("methodIdMethod");
 
                     b.HasIndex("statusIdStatus");
 
@@ -204,6 +223,23 @@ namespace OnlineShop.Migrations
                     b.HasKey("IdStatus");
 
                     b.ToTable("OrdersStatus");
+                });
+
+            modelBuilder.Entity("OnlineShop.Models.PaymnetMethod", b =>
+                {
+                    b.Property<int>("IdMethod")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdMethod"));
+
+                    b.Property<string>("NameMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdMethod");
+
+                    b.ToTable("PaymnetMethods");
                 });
 
             modelBuilder.Entity("OnlineShop.Models.Role", b =>
@@ -266,7 +302,7 @@ namespace OnlineShop.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("IdRole")
                         .HasColumnType("int");
@@ -279,9 +315,6 @@ namespace OnlineShop.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("basketIdBasket")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("createdat")
                         .HasColumnType("datetime2");
 
@@ -293,11 +326,23 @@ namespace OnlineShop.Migrations
 
                     b.HasKey("IdUser");
 
-                    b.HasIndex("basketIdBasket");
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.HasIndex("roleIdRole");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("OnlineShop.Models.Basket", b =>
+                {
+                    b.HasOne("OnlineShop.Models.User", "user")
+                        .WithMany()
+                        .HasForeignKey("userIdUser")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("OnlineShop.Models.BasketItem", b =>
@@ -349,6 +394,12 @@ namespace OnlineShop.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("OnlineShop.Models.PaymnetMethod", "method")
+                        .WithMany()
+                        .HasForeignKey("methodIdMethod")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("OnlineShop.Models.OrderStatus", "status")
                         .WithMany()
                         .HasForeignKey("statusIdStatus")
@@ -356,6 +407,8 @@ namespace OnlineShop.Migrations
                         .IsRequired();
 
                     b.Navigation("basket");
+
+                    b.Navigation("method");
 
                     b.Navigation("status");
                 });
@@ -373,19 +426,11 @@ namespace OnlineShop.Migrations
 
             modelBuilder.Entity("OnlineShop.Models.User", b =>
                 {
-                    b.HasOne("OnlineShop.Models.Basket", "basket")
-                        .WithMany()
-                        .HasForeignKey("basketIdBasket")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("OnlineShop.Models.Role", "role")
                         .WithMany()
                         .HasForeignKey("roleIdRole")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("basket");
 
                     b.Navigation("role");
                 });
