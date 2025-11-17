@@ -140,7 +140,7 @@ namespace OnlineShop.Controllers
         }
         [HttpPost]
         [Route("auth")]
-        [RoleAuthAtribute([1, 2, 3])]
+        //[RoleAuthAtribute([1, 2, 3])]
         public async Task<IActionResult> AuthUser([FromBody] AuthUser logindata)
         {
             return await _shopService.AuthUser(logindata);

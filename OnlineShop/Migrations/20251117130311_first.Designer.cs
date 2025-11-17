@@ -12,7 +12,7 @@ using OnlineShop.DataBaseContext;
 namespace OnlineShop.Migrations
 {
     [DbContext(typeof(ContextDb))]
-    [Migration("20251117110642_first")]
+    [Migration("20251117130311_first")]
     partial class first
     {
         /// <inheritdoc />
@@ -36,7 +36,7 @@ namespace OnlineShop.Migrations
                     b.Property<int>("IdUser")
                         .HasColumnType("int");
 
-                    b.Property<int>("userIdUser")
+                    b.Property<int>("IdUserBasket")
                         .HasColumnType("int");
 
                     b.HasKey("IdBasket");
@@ -44,7 +44,7 @@ namespace OnlineShop.Migrations
                     b.HasIndex("IdUser")
                         .IsUnique();
 
-                    b.HasIndex("userIdUser");
+                    b.HasIndex("IdUserBasket");
 
                     b.ToTable("Baskets");
                 });
@@ -60,24 +60,24 @@ namespace OnlineShop.Migrations
                     b.Property<int>("IdBasket")
                         .HasColumnType("int");
 
+                    b.Property<int>("IdBasketBasketItems")
+                        .HasColumnType("int");
+
                     b.Property<int>("IdItem")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdItemBasketItems")
                         .HasColumnType("int");
 
                     b.Property<string>("Quantity")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("basketitem")
-                        .HasColumnType("int");
-
-                    b.Property<int>("itemIdItem")
-                        .HasColumnType("int");
-
                     b.HasKey("IdBasketItem");
 
-                    b.HasIndex("basketitem");
+                    b.HasIndex("IdBasketBasketItems");
 
-                    b.HasIndex("itemIdItem");
+                    b.HasIndex("IdItemBasketItems");
 
                     b.ToTable("BasketItems");
                 });
@@ -114,6 +114,9 @@ namespace OnlineShop.Migrations
                     b.Property<int>("IdCategory")
                         .HasColumnType("int");
 
+                    b.Property<int>("IdCategoryItem")
+                        .HasColumnType("int");
+
                     b.Property<string>("NameItem")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -126,9 +129,6 @@ namespace OnlineShop.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("categoryIdCategory")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("createdat")
                         .HasColumnType("datetime2");
 
@@ -137,7 +137,7 @@ namespace OnlineShop.Migrations
 
                     b.HasKey("IdItem");
 
-                    b.HasIndex("categoryIdCategory");
+                    b.HasIndex("IdCategoryItem");
 
                     b.ToTable("Items");
                 });
@@ -161,15 +161,12 @@ namespace OnlineShop.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("userIdUser")
-                        .HasColumnType("int");
-
                     b.HasKey("IdLogin");
+
+                    b.HasIndex("IdUser");
 
                     b.HasIndex("Login1")
                         .IsUnique();
-
-                    b.HasIndex("userIdUser");
 
                     b.ToTable("Logins");
                 });
@@ -185,28 +182,22 @@ namespace OnlineShop.Migrations
                     b.Property<int>("IdBasket")
                         .HasColumnType("int");
 
+                    b.Property<int>("IdBasketOrder")
+                        .HasColumnType("int");
+
                     b.Property<int>("IdMethod")
                         .HasColumnType("int");
 
                     b.Property<int>("IdStatus")
                         .HasColumnType("int");
 
-                    b.Property<int>("basketIdBasket")
-                        .HasColumnType("int");
-
-                    b.Property<int>("methodIdMethod")
-                        .HasColumnType("int");
-
-                    b.Property<int>("statusIdStatus")
-                        .HasColumnType("int");
-
                     b.HasKey("IdOrder");
 
-                    b.HasIndex("basketIdBasket");
+                    b.HasIndex("IdBasketOrder");
 
-                    b.HasIndex("methodIdMethod");
+                    b.HasIndex("IdMethod");
 
-                    b.HasIndex("statusIdStatus");
+                    b.HasIndex("IdStatus");
 
                     b.ToTable("Orders");
                 });
@@ -277,12 +268,9 @@ namespace OnlineShop.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("userIdUser")
-                        .HasColumnType("int");
-
                     b.HasKey("IdSession");
 
-                    b.HasIndex("userIdUser");
+                    b.HasIndex("IdUser");
 
                     b.ToTable("Sessions");
                 });
@@ -321,9 +309,6 @@ namespace OnlineShop.Migrations
                     b.Property<DateTime>("createdat")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("roleIdRole")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("updatedat")
                         .HasColumnType("datetime2");
 
@@ -332,7 +317,7 @@ namespace OnlineShop.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.HasIndex("roleIdRole");
+                    b.HasIndex("IdRole");
 
                     b.ToTable("Users");
                 });
@@ -341,7 +326,7 @@ namespace OnlineShop.Migrations
                 {
                     b.HasOne("OnlineShop.Models.User", "user")
                         .WithMany()
-                        .HasForeignKey("userIdUser")
+                        .HasForeignKey("IdUserBasket")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -352,13 +337,13 @@ namespace OnlineShop.Migrations
                 {
                     b.HasOne("OnlineShop.Models.Basket", "basket")
                         .WithMany()
-                        .HasForeignKey("basketitem")
+                        .HasForeignKey("IdBasketBasketItems")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("OnlineShop.Models.Item", "item")
                         .WithMany()
-                        .HasForeignKey("itemIdItem")
+                        .HasForeignKey("IdItemBasketItems")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -371,7 +356,7 @@ namespace OnlineShop.Migrations
                 {
                     b.HasOne("OnlineShop.Models.Category", "category")
                         .WithMany()
-                        .HasForeignKey("categoryIdCategory")
+                        .HasForeignKey("IdCategoryItem")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -382,7 +367,7 @@ namespace OnlineShop.Migrations
                 {
                     b.HasOne("OnlineShop.Models.User", "user")
                         .WithMany()
-                        .HasForeignKey("userIdUser")
+                        .HasForeignKey("IdUser")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -393,19 +378,19 @@ namespace OnlineShop.Migrations
                 {
                     b.HasOne("OnlineShop.Models.Basket", "basket")
                         .WithMany()
-                        .HasForeignKey("basketIdBasket")
+                        .HasForeignKey("IdBasketOrder")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("OnlineShop.Models.PaymnetMethod", "method")
                         .WithMany()
-                        .HasForeignKey("methodIdMethod")
+                        .HasForeignKey("IdMethod")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("OnlineShop.Models.OrderStatus", "status")
                         .WithMany()
-                        .HasForeignKey("statusIdStatus")
+                        .HasForeignKey("IdStatus")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -420,7 +405,7 @@ namespace OnlineShop.Migrations
                 {
                     b.HasOne("OnlineShop.Models.User", "user")
                         .WithMany()
-                        .HasForeignKey("userIdUser")
+                        .HasForeignKey("IdUser")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -431,7 +416,7 @@ namespace OnlineShop.Migrations
                 {
                     b.HasOne("OnlineShop.Models.Role", "role")
                         .WithMany()
-                        .HasForeignKey("roleIdRole")
+                        .HasForeignKey("IdRole")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

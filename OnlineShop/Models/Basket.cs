@@ -8,8 +8,8 @@ namespace OnlineShop.Models
         [Key]
         public int IdBasket {  get; set; }
         [Required]
-        [ForeignKey("userbasket")]
         public int IdUser { get; set; }
+        [ForeignKey("IdUserBasket")]
         public User user { get; set; }
         
         

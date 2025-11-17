@@ -75,14 +75,15 @@ namespace OnlineShop.Migrations
                     Stock = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     isActive = table.Column<bool>(type: "bit", nullable: false),
                     createdat = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IdCategory = table.Column<int>(type: "int", nullable: false)
+                    IdCategory = table.Column<int>(type: "int", nullable: false),
+                    IdCategoryItem = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Items", x => x.IdItem);
                     table.ForeignKey(
-                        name: "FK_Items_Categories_categoryIdCategory",
-                        column: x => x.IdCategory,
+                        name: "FK_Items_Categories_IdCategoryItem",
+                        column: x => x.IdCategoryItem,
                         principalTable: "Categories",
                         principalColumn: "IdCategory",
                         onDelete: ReferentialAction.Cascade);
@@ -107,7 +108,7 @@ namespace OnlineShop.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.IdUser);
                     table.ForeignKey(
-                        name: "FK_Users_Roles_roleIdRole",
+                        name: "FK_Users_Roles_IdRole",
                         column: x => x.IdRole,
                         principalTable: "Roles",
                         principalColumn: "IdRole",
@@ -120,14 +121,15 @@ namespace OnlineShop.Migrations
                 {
                     IdBasket = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdUser = table.Column<int>(type: "int", nullable: false)
+                    IdUser = table.Column<int>(type: "int", nullable: false),
+                    IdUserBasket = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Baskets", x => x.IdBasket);
                     table.ForeignKey(
-                        name: "FK_Baskets_Users_userIdUser",
-                        column: x => x.IdUser,
+                        name: "FK_Baskets_Users_IdUserBasket",
+                        column: x => x.IdUserBasket,
                         principalTable: "Users",
                         principalColumn: "IdUser",
                         onDelete: ReferentialAction.Cascade);
@@ -147,7 +149,7 @@ namespace OnlineShop.Migrations
                 {
                     table.PrimaryKey("PK_Logins", x => x.IdLogin);
                     table.ForeignKey(
-                        name: "FK_Logins_Users_userIdUser",
+                        name: "FK_Logins_Users_IdUser",
                         column: x => x.IdUser,
                         principalTable: "Users",
                         principalColumn: "IdUser",
@@ -167,7 +169,7 @@ namespace OnlineShop.Migrations
                 {
                     table.PrimaryKey("PK_Sessions", x => x.IdSession);
                     table.ForeignKey(
-                        name: "FK_Sessions_Users_userIdUser",
+                        name: "FK_Sessions_Users_IdUser",
                         column: x => x.IdUser,
                         principalTable: "Users",
                         principalColumn: "IdUser",
@@ -181,21 +183,23 @@ namespace OnlineShop.Migrations
                     IdBasketItem = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     IdBasket = table.Column<int>(type: "int", nullable: false),
+                    IdBasketBasketItems = table.Column<int>(type: "int", nullable: false),
                     IdItem = table.Column<int>(type: "int", nullable: false),
+                    IdItemBasketItems = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BasketItems", x => x.IdBasketItem);
                     table.ForeignKey(
-                        name: "FK_BasketItems_Baskets_basketitem",
-                        column: x => x.IdBasket,
+                        name: "FK_BasketItems_Baskets_IdBasketBasketItems",
+                        column: x => x.IdBasketBasketItems,
                         principalTable: "Baskets",
                         principalColumn: "IdBasket",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_BasketItems_Items_itemIdItem",
-                        column: x => x.IdItem,
+                        name: "FK_BasketItems_Items_IdItemBasketItems",
+                        column: x => x.IdItemBasketItems,
                         principalTable: "Items",
                         principalColumn: "IdItem",
                         onDelete: ReferentialAction.Cascade);
@@ -209,25 +213,26 @@ namespace OnlineShop.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     IdMethod = table.Column<int>(type: "int", nullable: false),
                     IdStatus = table.Column<int>(type: "int", nullable: false),
-                    IdBasket = table.Column<int>(type: "int", nullable: false)
+                    IdBasket = table.Column<int>(type: "int", nullable: false),
+                    IdBasketOrder = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Orders", x => x.IdOrder);
                     table.ForeignKey(
-                        name: "FK_Orders_Baskets_basketIdBasket",
-                        column: x => x.IdBasket,
+                        name: "FK_Orders_Baskets_IdBasketOrder",
+                        column: x => x.IdBasketOrder,
                         principalTable: "Baskets",
                         principalColumn: "IdBasket",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Orders_OrdersStatus_statusIdStatus",
+                        name: "FK_Orders_OrdersStatus_IdStatus",
                         column: x => x.IdStatus,
                         principalTable: "OrdersStatus",
                         principalColumn: "IdStatus",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Orders_PaymnetMethods_methodIdMethod",
+                        name: "FK_Orders_PaymnetMethods_IdMethod",
                         column: x => x.IdMethod,
                         principalTable: "PaymnetMethods",
                         principalColumn: "IdMethod",
@@ -235,14 +240,14 @@ namespace OnlineShop.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_BasketItems_basketitem",
+                name: "IX_BasketItems_IdBasketBasketItems",
                 table: "BasketItems",
-                column: "IdBasket");
+                column: "IdBasketBasketItems");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BasketItems_itemIdItem",
+                name: "IX_BasketItems_IdItemBasketItems",
                 table: "BasketItems",
-                column: "IdItem");
+                column: "IdItemBasketItems");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Baskets_IdUser",
@@ -251,14 +256,19 @@ namespace OnlineShop.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Baskets_userIdUser",
+                name: "IX_Baskets_IdUserBasket",
                 table: "Baskets",
-                column: "IdUser");
+                column: "IdUserBasket");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Items_categoryIdCategory",
+                name: "IX_Items_IdCategoryItem",
                 table: "Items",
-                column: "IdCategory");
+                column: "IdCategoryItem");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logins_IdUser",
+                table: "Logins",
+                column: "IdUser");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Logins_Login1",
@@ -267,27 +277,22 @@ namespace OnlineShop.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Logins_userIdUser",
-                table: "Logins",
-                column: "IdUser");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Orders_basketIdBasket",
+                name: "IX_Orders_IdBasketOrder",
                 table: "Orders",
-                column: "IdBasket");
+                column: "IdBasketOrder");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Orders_methodIdMethod",
+                name: "IX_Orders_IdMethod",
                 table: "Orders",
                 column: "IdMethod");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Orders_statusIdStatus",
+                name: "IX_Orders_IdStatus",
                 table: "Orders",
                 column: "IdStatus");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sessions_userIdUser",
+                name: "IX_Sessions_IdUser",
                 table: "Sessions",
                 column: "IdUser");
 
@@ -298,7 +303,7 @@ namespace OnlineShop.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_roleIdRole",
+                name: "IX_Users_IdRole",
                 table: "Users",
                 column: "IdRole");
         }
