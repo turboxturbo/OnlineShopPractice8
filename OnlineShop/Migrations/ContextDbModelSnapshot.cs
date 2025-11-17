@@ -30,9 +30,45 @@ namespace OnlineShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdBasket"));
 
+                    b.Property<int>("IdUser")
+                        .HasColumnType("int");
+
                     b.HasKey("IdBasket");
 
                     b.ToTable("Baskets");
+                });
+
+            modelBuilder.Entity("OnlineShop.Models.BasketItem", b =>
+                {
+                    b.Property<int>("IdBasketItem")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdBasketItem"));
+
+                    b.Property<int>("IdBasket")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdItem")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Quantity")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("basketitem")
+                        .HasColumnType("int");
+
+                    b.Property<int>("itemIdItem")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdBasketItem");
+
+                    b.HasIndex("basketitem");
+
+                    b.HasIndex("itemIdItem");
+
+                    b.ToTable("BasketItems");
                 });
 
             modelBuilder.Entity("OnlineShop.Models.Category", b =>
@@ -110,7 +146,7 @@ namespace OnlineShop.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("password")
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -221,6 +257,7 @@ namespace OnlineShop.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdUser"));
 
                     b.Property<string>("Address")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
@@ -228,6 +265,7 @@ namespace OnlineShop.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("IdRole")
@@ -241,6 +279,9 @@ namespace OnlineShop.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("basketIdBasket")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("createdat")
                         .HasColumnType("datetime2");
 
@@ -252,9 +293,30 @@ namespace OnlineShop.Migrations
 
                     b.HasKey("IdUser");
 
+                    b.HasIndex("basketIdBasket");
+
                     b.HasIndex("roleIdRole");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("OnlineShop.Models.BasketItem", b =>
+                {
+                    b.HasOne("OnlineShop.Models.Basket", "basket")
+                        .WithMany()
+                        .HasForeignKey("basketitem")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnlineShop.Models.Item", "item")
+                        .WithMany()
+                        .HasForeignKey("itemIdItem")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("basket");
+
+                    b.Navigation("item");
                 });
 
             modelBuilder.Entity("OnlineShop.Models.Item", b =>
@@ -311,11 +373,19 @@ namespace OnlineShop.Migrations
 
             modelBuilder.Entity("OnlineShop.Models.User", b =>
                 {
+                    b.HasOne("OnlineShop.Models.Basket", "basket")
+                        .WithMany()
+                        .HasForeignKey("basketIdBasket")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("OnlineShop.Models.Role", "role")
                         .WithMany()
                         .HasForeignKey("roleIdRole")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("basket");
 
                     b.Navigation("role");
                 });
