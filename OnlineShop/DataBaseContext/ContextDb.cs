@@ -18,5 +18,11 @@ namespace OnlineShop.DataBaseContext
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderStatus> OrdersStatus { get; set; }
         public DbSet<BasketItem> BasketItems { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique(); // уникальность email
+            modelBuilder.Entity<Login>().HasIndex(l => l.Login1).IsUnique(); // уникальность login
+            modelBuilder.Entity<Basket>().HasIndex(b => b.IdUser).IsUnique(); // уникальность в basket, 
+        }
     }
 }

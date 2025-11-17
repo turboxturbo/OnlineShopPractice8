@@ -90,7 +90,7 @@ namespace OnlineShop.Controllers
             return await _shopService.ChangeUser(changeUser);
         }
         [HttpGet]
-        [Route("getusers")]
+        [Route("get/users")]
         [RoleAuthAtribute([1, 3])]
         public async Task<IActionResult> GetUser()
         {

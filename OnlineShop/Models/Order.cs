@@ -7,6 +7,10 @@ namespace OnlineShop.Models
     {
         [Key]
         public int IdOrder { get; set; }
+        [Required]
+        [ForeignKey("IdMethod")]
+        public int IdMethod { get; set; }
+        public PaymnetMethod method { get; set; }
         public OrderStatus status { get; set; }
         [Required]
         [ForeignKey("IdStatus")]

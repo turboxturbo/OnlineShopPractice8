@@ -16,7 +16,7 @@ namespace OnlineShop.CustomAtributes
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var dbcontext = context.HttpContext.RequestServices.GetRequiredService<ContextDb>();
-            string? token = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            string token = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
             if (string.IsNullOrEmpty(token))
             {
                 context.Result = new JsonResult(new {error = "Session is not given"}) { StatusCode = 401 };

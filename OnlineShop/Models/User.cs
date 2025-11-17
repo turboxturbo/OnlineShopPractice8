@@ -18,6 +18,6 @@ namespace OnlineShop.Models
         [ForeignKey("IdRole")]
         public int IdRole { get; set; }
         public Role role { get; set; }
-        public Basket basket { get; set; } // для связи 1 на 1
+        
     }
 }
