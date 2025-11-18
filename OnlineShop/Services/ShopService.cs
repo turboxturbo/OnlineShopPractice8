@@ -68,7 +68,7 @@ namespace OnlineShop.Services
 
         public async Task<IActionResult> GetAllUsersAsync()
         {
-            var users = _contextDb.Users.FirstOrDefaultAsync();
+            var users = await _contextDb.Users.FirstOrDefaultAsync();
             return new OkObjectResult(new
             {
                 data = new { users = users },
@@ -86,7 +86,7 @@ namespace OnlineShop.Services
             {
                 query = query.Where(i => i.NameItem == getitem.NameItem);
             }
-
+             
             if (!string.IsNullOrEmpty(getitem.NameCategory))
             {
                 query = query.Where(i => i.category.NameCategory == getitem.NameCategory);
@@ -119,8 +119,6 @@ namespace OnlineShop.Services
         public async Task<IActionResult> AddItemInBasket(AddItemInBasketRequest additeminbasket)
         {
             var item = await _contextDb.Items.FirstOrDefaultAsync(i => i.IdItem == additeminbasket.idtem);
-            //var userid = _httpContextAccessor.HttpContext?.User;
-            //var userIdClaim = int.Parse(userid?.FindFirst("IdUser").Value);
             string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
             if (token == null)
             {
@@ -177,9 +175,17 @@ namespace OnlineShop.Services
         }
         public async Task<IActionResult> GetOrders()
         {
-            var userid = _httpContextAccessor.HttpContext?.User;
-            var userIdClaim = int.Parse(userid?.FindFirst("UserId").Value);
-            var orders = _contextDb.Orders.Include(o => o.basket.IdUser == userIdClaim).Include(o => o.IdStatus).FirstOrDefault();
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
+            var orders = await _contextDb.Orders.Include(o => o.basket).Where(o => o.basket.IdUser == userid.IdUser).FirstOrDefaultAsync();
             return new OkObjectResult(new {data = orders, status = true});
         }
         public async Task<IActionResult> ChangeUserAndLogin(ChangeUser changeUser)
@@ -195,7 +201,7 @@ namespace OnlineShop.Services
             await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new { data = user, status = true });
         }
-        public async Task<IActionResult> GetUser() //получить всех юзеров (менеджер)
+        public async Task<IActionResult> GetUser() //получить всех юзеров (менеджер и админ)
         {
             var users = await _contextDb.Users.FirstOrDefaultAsync();
             return new OkObjectResult(new {data = users, status = true});
@@ -262,9 +268,17 @@ namespace OnlineShop.Services
         }
         public async Task<IActionResult> ChangeUserMen(ChangeUser changeUser) // изменить самого себя (менеджер)
         {
-            var userid = _httpContextAccessor.HttpContext?.User;
-            var userIdClaim = int.Parse(userid?.FindFirst("UserId").Value);
-            var user = await _contextDb.Logins.Include(u=>u.user).Where(u => u.IdUser == userIdClaim).FirstOrDefaultAsync();
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
+            var user = await _contextDb.Logins.Include(u=>u.user).Where(u => u.IdUser == userid.IdUser).FirstOrDefaultAsync();
             user.Login1 = changeUser.Login1;
             user.Password = changeUser.Password;
             user.user.Address = changeUser.Address;
