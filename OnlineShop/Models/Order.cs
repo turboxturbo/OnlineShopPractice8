@@ -8,7 +8,7 @@ namespace OnlineShop.Models
         [Key]
         public int IdOrder { get; set; }
         [Required]
-        [ForeignKey("method ")]
+        [ForeignKey("method")]
         public int IdMethod { get; set; }
         public PaymnetMethod method { get; set; }
 
