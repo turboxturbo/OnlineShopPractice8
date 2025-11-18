@@ -7,13 +7,13 @@ namespace OnlineShop.Intrefaces
     {
         Task<IActionResult> GetItems(GetItemsRequest getitem);
         Task<IActionResult> GetLogs();
-        Task<IActionResult> AddNewEmployee(ChangeUser addemployee, int idrole);
-        Task<IActionResult> ChangeEmployee(int idemployee, ChangeUser changeUser);
-        Task<IActionResult> DelEmployees(int iduser);
+        Task<IActionResult> AddNewEmployee(ChangeUser addemployee);
+        Task<IActionResult> ChangeEmployee(ChangeUser changeUser);
+        Task<IActionResult> DelEmployees(Delemployeerequest delemployee);
         Task<IActionResult> GetEmployees();
-        Task<IActionResult> ChangeOrders(int idorder, ChangeOrderStatus changeOrderStatus);
+        Task<IActionResult> ChangeOrders(ChangeOrderStatus changeOrderStatus);
         Task<IActionResult> GetOrdersStatus();
-        Task<IActionResult> ChangeItem(ChangeItem changeItem, int iditem);
+        Task<IActionResult> ChangeItem(ChangeItem changeItem);
         Task<IActionResult> AddItems(ChangeItem changeItem);
         Task<IActionResult> ChangeUser(ChangeUser changeUser);
         Task<IActionResult> GetUser();

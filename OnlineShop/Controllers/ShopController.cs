@@ -29,23 +29,23 @@ namespace OnlineShop.Controllers
         [HttpPost]
         [Route("adduser/admin")]
         [RoleAuthAtribute([3])]
-        public async Task<IActionResult> AddNewEmployee([FromBody] ChangeUser addemployee, int idrole)
+        public async Task<IActionResult> AddNewEmployee([FromBody] ChangeUser addemployee)
         {
-            return await _shopService.AddNewEmployee(addemployee, idrole);
+            return await _shopService.AddNewEmployee(addemployee);
         }
         [HttpPut]
         [Route("changeemployee")]
         [RoleAuthAtribute([1,3])]
-        public async Task<IActionResult> ChangeEmployee([FromBody] int idemployee, ChangeUser changeUser)
+        public async Task<IActionResult> ChangeEmployee([FromBody] ChangeUser changeUser)
         {
-            return await _shopService.ChangeEmployee(idemployee, changeUser);
+            return await _shopService.ChangeEmployee(changeUser);
         }
         [HttpDelete]
         [Route("delemployee")]
         [RoleAuthAtribute([1,3])]
-        public async Task<IActionResult> DelEmployees([FromBody] int iduser)
+        public async Task<IActionResult> DelEmployees([FromBody]Delemployeerequest delemployee)
         {
-            return await _shopService.DelEmployees(iduser);
+            return await _shopService.DelEmployees(delemployee);
         }
         [HttpGet]
         [Route("getemployee")]
@@ -57,9 +57,9 @@ namespace OnlineShop.Controllers
         [HttpPost]
         [Route("changeorders")]
         [RoleAuthAtribute([1, 3])]
-        public async Task<IActionResult> ChangeOrders([FromBody] int idorder, ChangeOrderStatus changeOrderStatus)
+        public async Task<IActionResult> ChangeOrders([FromBody] ChangeOrderStatus changeOrderStatus)
         {
-            return await _shopService.ChangeOrders(idorder, changeOrderStatus);
+            return await _shopService.ChangeOrders(changeOrderStatus);
         }
         [HttpGet]
         [Route("getorders")]
@@ -71,9 +71,9 @@ namespace OnlineShop.Controllers
         [HttpPut]
         [Route("changeitems")]
         [RoleAuthAtribute([1, 3])]
-        public async Task<IActionResult> ChangeItem([FromBody] ChangeItem changeItem, int iditem)
+        public async Task<IActionResult> ChangeItem([FromBody] ChangeItem changeItem)
         {
-            return await _shopService.ChangeItem(changeItem, iditem);
+            return await _shopService.ChangeItem(changeItem);
         }
         [HttpPost]
         [Route("additems")]

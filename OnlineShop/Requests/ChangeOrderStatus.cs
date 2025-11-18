@@ -6,7 +6,7 @@ namespace OnlineShop.Requests
 {
     public class ChangeOrderStatus
     {
-        
+        public int idorder { get; set; }
         public int IdStatus { get; set; }
     }
 }
