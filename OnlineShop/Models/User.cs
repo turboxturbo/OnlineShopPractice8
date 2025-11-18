@@ -15,8 +15,8 @@ namespace OnlineShop.Models
         public DateTime createdat {  get; set; }
         public DateTime updatedat { get; set; }
         [Required]
+        [ForeignKey("role")]
         public int IdRole { get; set; }
-        [ForeignKey("IdRole")]
         public Role role { get; set; }
         
     }

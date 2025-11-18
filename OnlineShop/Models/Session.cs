@@ -11,8 +11,8 @@ namespace OnlineShop.Models
         public int IdSession { get; set; }
         public string Token { get; set; }
         [Required]
+        [ForeignKey("user")]
         public int IdUser { get; set; }
-        [ForeignKey("IdUser")]
         public User user { get; set; }
     }
 }

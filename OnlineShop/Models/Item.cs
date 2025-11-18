@@ -14,8 +14,8 @@ namespace OnlineShop.Models
         public bool isActive { get; set; }
         public DateTime createdat {  get; set; }
         [Required]
-        public int IdCategory {  get; set; }
-        [ForeignKey("IdCategoryItem")]
+        [ForeignKey("category")]
+        public int IdCategory { get; set; }
         public Category category { get; set; }
         
 

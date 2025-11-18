@@ -8,13 +8,13 @@ namespace OnlineShop.Models
         [Key]
         public int IdBasketItem { get; set; } // Уникальный идентификатор товара в корзине
         [Required]
+        [ForeignKey("basket")]
         public int IdBasket { get; set; } // Идентификатор корзины
-        [ForeignKey("IdBasketBasketItems")]
         public Basket basket { get; set; } // Связь с корзиной
 
         [Required]
+        [ForeignKey("item")]
         public int IdItem { get; set; } // Идентификатор товара
-        [ForeignKey("IdItemBasketItems")]
         public Item item { get; set; } // Связь с товаром
 
         public string Quantity { get; set; } // Количество товара в корзине

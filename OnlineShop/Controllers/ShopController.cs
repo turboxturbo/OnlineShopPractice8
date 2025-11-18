@@ -14,10 +14,10 @@ namespace OnlineShop.Controllers
         }
         [HttpGet]
         [Route("get/items")]
-        [RoleAuthAtribute([1, 2])]
-        public async Task<IActionResult> GetItems([FromBody] string NameItem, string NameCategory)
+        [RoleAuthAtribute([1, 2, 3])]
+        public async Task<IActionResult> GetItems([FromBody] GetItemsRequest getitem)
         {
-            return await _shopService.GetItems(NameItem, NameCategory);
+            return await _shopService.GetItems(getitem);
         }
         [HttpGet]
         [Route("get/logs")]
@@ -120,9 +120,9 @@ namespace OnlineShop.Controllers
         [HttpPost]
         [Route("additeminbasket")]
         [RoleAuthAtribute([1, 2, 3])]
-        public async Task<IActionResult> AddItemInBasket([FromBody] int idtem, string quantity)
+        public async Task<IActionResult> AddItemInBasket([FromBody] AddItemInBasketRequest additeminbasket)
         {
-            return await _shopService.AddItemInBasket(idtem, quantity);
+            return await _shopService.AddItemInBasket(additeminbasket);
         }
         [HttpGet]
         [Route("getusers")]

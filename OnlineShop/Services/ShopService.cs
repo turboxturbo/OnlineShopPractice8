@@ -76,60 +76,87 @@ namespace OnlineShop.Services
             });
         }
 
-        public async Task<IActionResult> GetItems(string NameItem, string NameCategory) //получить товары sort
+        public async Task<IActionResult> GetItems(GetItemsRequest getitem) //получить товары sort
         {
-            var items = _contextDb.Items.Include(i => i.category).AsQueryable();
-            if (!string.IsNullOrEmpty(NameItem) && !string.IsNullOrEmpty(NameCategory))
+
+            var query = _contextDb.Items.Include(i => i.category).AsQueryable();
+
+            // Применяем фильтры
+            if (!string.IsNullOrEmpty(getitem.NameItem))
             {
-                items = items.Where(i => i.category.NameCategory == NameCategory && i.NameItem == NameItem);
+                query = query.Where(i => i.NameItem == getitem.NameItem);
             }
+
+            if (!string.IsNullOrEmpty(getitem.NameCategory))
+            {
+                query = query.Where(i => i.category.NameCategory == getitem.NameCategory);
+            }
+
+            if (getitem.OrderByCategory)
+            {
+                query = query.OrderBy(o => o.category.NameCategory);
+            }
+
+            if (getitem.OrderByItem)
+            {
+                query = query.OrderBy(o => o.NameItem);
+            }
+
+            var items = await query.ToListAsync();
+
             if (items == null)
             {
-                return new NotFoundObjectResult(new {status = false, message = "Таких товаров нет"});
+                return new NotFoundObjectResult(new { status = false, message = "Таких товаров нет" });
             }
-            return new ObjectResult(new
+
+            return new OkObjectResult(new
             {
                 data = new { items = items },
                 status = true
             });
-        }
-        public async Task<IActionResult> AddItemInBasket(int idtem, string quantity)
-        {
-            var item = _contextDb.Items.Include(i => i.IdItem ==  idtem).FirstOrDefault();
-            var userid = _httpContextAccessor.HttpContext?.User;
-            var userIdClaim = int.Parse(userid?.FindFirst("UserId").Value);
 
-            
+        }
+        public async Task<IActionResult> AddItemInBasket(AddItemInBasketRequest additeminbasket)
+        {
+            var item = await _contextDb.Items.FirstOrDefaultAsync(i => i.IdItem == additeminbasket.idtem);
+            //var userid = _httpContextAccessor.HttpContext?.User;
+            //var userIdClaim = int.Parse(userid?.FindFirst("IdUser").Value);
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
+
             if (item == null)
             {
                 return new NotFoundObjectResult(new { status = false, message = "Такого товара нет" });
             }
-            var basket = _contextDb.Baskets.Include(b => b.IdUser == userIdClaim).FirstOrDefault();
+            var basket = await _contextDb.Baskets.FirstOrDefaultAsync(b => b.IdUser == userid.IdUser);
             
             if (basket == null)
             {
-                var additem = new BasketItem()
+
+                basket = new Basket()
                 {
-                    basket = new Basket()
-                    {
-                        IdUser = userIdClaim,
-                    },
-                    IdBasket = userIdClaim,
-                    IdItem = idtem,
-                    Quantity = quantity
+                    IdUser = userid.IdUser
                 };
-                _contextDb.BasketItems.Add(additem);
+
+                _contextDb.Baskets.Add(basket);
+                await _contextDb.SaveChangesAsync();
             }
-            else
+            
+            var basketitem = new BasketItem()
             {
-                var additem = new BasketItem()
-                {
-                    IdBasket = basket.IdBasket,
-                    IdItem = idtem,
-                    Quantity = quantity
-                };
-                _contextDb.BasketItems.Add(additem);
-            }
+                IdBasket = basket.IdBasket,
+                IdItem = additeminbasket.idtem,
+                Quantity = additeminbasket.quantity
+            };
+            _contextDb.BasketItems.Add(basketitem);
             await _contextDb.SaveChangesAsync();
             return new ObjectResult(new { status = true});
         }

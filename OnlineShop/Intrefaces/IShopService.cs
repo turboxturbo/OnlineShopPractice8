@@ -5,7 +5,7 @@ namespace OnlineShop.Intrefaces
 {
     public interface IShopService
     {
-        Task<IActionResult> GetItems(string NameItem, string NameCategory);
+        Task<IActionResult> GetItems(GetItemsRequest getitem);
         Task<IActionResult> GetLogs();
         Task<IActionResult> AddNewEmployee(ChangeUser addemployee, int idrole);
         Task<IActionResult> ChangeEmployee(int idemployee, ChangeUser changeUser);
@@ -20,7 +20,7 @@ namespace OnlineShop.Intrefaces
         Task<IActionResult> ChangeUserAndLogin(ChangeUser changeUser);
         Task<IActionResult> GetOrders();
         Task<IActionResult> CreateOrder();
-        Task<IActionResult> AddItemInBasket(int idtem, string quantity);
+        Task<IActionResult> AddItemInBasket(AddItemInBasketRequest additeminbasket);
         Task<IActionResult> GetAllUsersAsync();
         Task<IActionResult> CreateNewUserAndLoginAsync(CreateNewUser newUser);
         Task<IActionResult> AuthUser(AuthUser logindata);
