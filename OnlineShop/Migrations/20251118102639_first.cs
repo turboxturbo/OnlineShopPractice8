@@ -12,6 +12,19 @@ namespace OnlineShop.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "ActionUsers",
+                columns: table => new
+                {
+                    IdAction = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NameAction = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ActionUsers", x => x.IdAction);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Categories",
                 columns: table => new
                 {
@@ -22,6 +35,19 @@ namespace OnlineShop.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.IdCategory);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DeliveryMethods",
+                columns: table => new
+                {
+                    IdMethod = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NameMethod = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeliveryMethods", x => x.IdMethod);
                 });
 
             migrationBuilder.CreateTable(
@@ -155,6 +181,32 @@ namespace OnlineShop.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Logs",
+                columns: table => new
+                {
+                    IdLog = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IdAction = table.Column<int>(type: "int", nullable: false),
+                    IdUser = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Logs", x => x.IdLog);
+                    table.ForeignKey(
+                        name: "FK_Logs_ActionUsers_IdAction",
+                        column: x => x.IdAction,
+                        principalTable: "ActionUsers",
+                        principalColumn: "IdAction",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Logs_Users_IdUser",
+                        column: x => x.IdUser,
+                        principalTable: "Users",
+                        principalColumn: "IdUser",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Sessions",
                 columns: table => new
                 {
@@ -209,7 +261,8 @@ namespace OnlineShop.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     IdMethod = table.Column<int>(type: "int", nullable: false),
                     IdStatus = table.Column<int>(type: "int", nullable: false),
-                    IdBasket = table.Column<int>(type: "int", nullable: false)
+                    IdBasket = table.Column<int>(type: "int", nullable: false),
+                    IdMethodDelivery = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -219,6 +272,12 @@ namespace OnlineShop.Migrations
                         column: x => x.IdBasket,
                         principalTable: "Baskets",
                         principalColumn: "IdBasket",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Orders_DeliveryMethods_IdMethodDelivery",
+                        column: x => x.IdMethodDelivery,
+                        principalTable: "DeliveryMethods",
+                        principalColumn: "IdMethod",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Orders_OrdersStatus_IdStatus",
@@ -267,6 +326,16 @@ namespace OnlineShop.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Logs_IdAction",
+                table: "Logs",
+                column: "IdAction");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logs_IdUser",
+                table: "Logs",
+                column: "IdUser");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Orders_IdBasket",
                 table: "Orders",
                 column: "IdBasket");
@@ -275,6 +344,11 @@ namespace OnlineShop.Migrations
                 name: "IX_Orders_IdMethod",
                 table: "Orders",
                 column: "IdMethod");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_IdMethodDelivery",
+                table: "Orders",
+                column: "IdMethodDelivery");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_IdStatus",
@@ -308,6 +382,9 @@ namespace OnlineShop.Migrations
                 name: "Logins");
 
             migrationBuilder.DropTable(
+                name: "Logs");
+
+            migrationBuilder.DropTable(
                 name: "Orders");
 
             migrationBuilder.DropTable(
@@ -317,7 +394,13 @@ namespace OnlineShop.Migrations
                 name: "Items");
 
             migrationBuilder.DropTable(
+                name: "ActionUsers");
+
+            migrationBuilder.DropTable(
                 name: "Baskets");
+
+            migrationBuilder.DropTable(
+                name: "DeliveryMethods");
 
             migrationBuilder.DropTable(
                 name: "OrdersStatus");

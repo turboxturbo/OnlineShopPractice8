@@ -51,7 +51,11 @@ namespace OnlineShop.Services
                 {
                     Description = newUser.Description,
                     UserName = newUser.Name,
-                    IdRole = 2
+                    IdRole = 2,
+                    Email = newUser.Email,
+                    Address = newUser.Address,
+                    PhoneNumber = newUser.PhoneNumber
+
                 },
                 Password = newUser.Password,
                 Login1 = newUser.Login
@@ -84,12 +88,12 @@ namespace OnlineShop.Services
             // Применяем фильтры
             if (!string.IsNullOrEmpty(getitem.NameItem))
             {
-                query = query.Where(i => i.NameItem == getitem.NameItem);
+                query = query.Where(i => i.NameItem.Contains(getitem.NameItem));
             }
              
             if (!string.IsNullOrEmpty(getitem.NameCategory))
             {
-                query = query.Where(i => i.category.NameCategory == getitem.NameCategory);
+                query = query.Where(i => i.category.NameCategory.Contains(getitem.NameCategory));
             }
 
             if (getitem.OrderByCategory)
@@ -103,8 +107,9 @@ namespace OnlineShop.Services
             }
 
             var items = await query.ToListAsync();
+            
 
-            if (items == null)
+            if (items == null || items.Count == 0)
             {
                 return new NotFoundObjectResult(new { status = false, message = "Таких товаров нет" });
             }
@@ -160,14 +165,23 @@ namespace OnlineShop.Services
         }
         public async Task<IActionResult> CreateOrder()
         {
-            
-            var userid = _httpContextAccessor.HttpContext?.User;
-            var userIdClaim = int.Parse(userid?.FindFirst("UserId").Value);
-            var basket = _contextDb.Baskets.Include(b => b.IdUser == userIdClaim).FirstOrDefault();
+
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
+            var basket = _contextDb.Baskets.Include(b => b.IdUser == userid.IdUser).FirstOrDefault();
             var neworder = new Order() 
             { 
                 IdBasket = basket.IdBasket,
-                IdStatus = 1
+                IdStatus = 1,
+                IdMethod = 1,
             };
             _contextDb.Orders.AddAsync(neworder);
             await _contextDb.SaveChangesAsync();
@@ -242,9 +256,9 @@ namespace OnlineShop.Services
             await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new { data = items, status = true });
         }
-        public async Task<IActionResult> ChangeItem (ChangeItem changeItem, int iditem) // изменить товар (менеджер)
+        public async Task<IActionResult> ChangeItem (ChangeItem changeItem) // изменить товар (менеджер)
         {
-            var items = await _contextDb.Items.Where(i => i.IdItem == iditem).FirstOrDefaultAsync();
+            var items = await _contextDb.Items.Where(i => i.IdItem == changeItem.IdItem).FirstOrDefaultAsync();
             items.IdCategory = changeItem.IdCategory;
             items.NameItem = changeItem.NameItem;
             items.DescriptionItem = changeItem.DescriptionItem;
@@ -260,9 +274,9 @@ namespace OnlineShop.Services
             var orders = _contextDb.Orders.Include(o => o.status).FirstOrDefaultAsync();
             return new OkObjectResult(new { data = orders, status = true });
         }
-        public async Task<IActionResult> ChangeOrders(int idorder, ChangeOrderStatus changeOrderStatus) // изменить статус заказа 
+        public async Task<IActionResult> ChangeOrders(ChangeOrderStatus changeOrderStatus) // изменить статус заказа 
         {
-            var orders = await _contextDb.Orders.Include(o => o.status).Where(o => o.IdOrder == idorder).FirstOrDefaultAsync();
+            var orders = await _contextDb.Orders.Include(o => o.status).Where(o => o.IdOrder == changeOrderStatus.idorder).FirstOrDefaultAsync();
             orders.IdStatus = changeOrderStatus.IdStatus;
             return new OkObjectResult(new { data = orders, status = true });
         }
@@ -295,16 +309,16 @@ namespace OnlineShop.Services
             var employees = _contextDb.Users.Include(u => u.IdRole == 1 || u.IdRole == 3).FirstOrDefaultAsync();
             return new OkObjectResult(new { data = employees, status = true });
         }
-        public async Task<IActionResult> DelEmployees(int iduser) // удалить сотрудника (админ)
+        public async Task<IActionResult> DelEmployees(Delemployeerequest delemployee) // удалить сотрудника (админ)
         {
-            var employees = _contextDb.Users.Include(u => u.IdRole == 1 || u.IdRole == 3).Where(u =>u.IdUser==iduser).FirstOrDefaultAsync();
+            var employees = _contextDb.Users.Include(u => u.IdRole == 1 || u.IdRole == 3).Where(u =>u.IdUser== delemployee.iduser).FirstOrDefaultAsync();
             _contextDb.Remove(employees);
             await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new { data = employees, status = true });
         }
-        public async Task<IActionResult> ChangeEmployee(int idemployee, ChangeUser changeUser)
+        public async Task<IActionResult> ChangeEmployee(ChangeUser changeUser)
         {
-            var user = await _contextDb.Logins.Include(u => u.user).Where(u => u.IdUser == idemployee).FirstOrDefaultAsync();
+            var user = await _contextDb.Logins.Include(u => u.user).Where(u => u.IdUser == changeUser.Idemployee).FirstOrDefaultAsync();
             user.Login1 = changeUser.Login1;
             user.Password = changeUser.Password;
             user.user.Address = changeUser.Address;
@@ -316,7 +330,7 @@ namespace OnlineShop.Services
             await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new { data = user, status = true });
         }
-        public async Task<IActionResult> AddNewEmployee(ChangeUser addemployee, int idrole) // добавить нового юзера/сотрудника(admin)
+        public async Task<IActionResult> AddNewEmployee(ChangeUser addemployee) // добавить нового юзера/сотрудника(admin)
         {
             var users = _contextDb.Logins.Include(u => u.user).FirstOrDefaultAsync();
             var newuser = new Login
@@ -331,7 +345,7 @@ namespace OnlineShop.Services
                     UserName = addemployee.UserName,
                     Description = addemployee.Description,
                     Email = addemployee.Email,
-                    IdRole = idrole
+                    IdRole = addemployee.idrole,
                 }
 
             };
