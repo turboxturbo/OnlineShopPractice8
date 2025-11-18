@@ -21,6 +21,10 @@ namespace OnlineShop.Models
         [ForeignKey("basket")]
         public int IdBasket { get; set; }
         public Basket basket { get; set; }
+        [Required]
+        [ForeignKey("deliverymethod")]
+        public int IdMethodDelivery { get; set; }
+        public DeliveryMethod deliverymethod { get; set; }
 
     }
 }
