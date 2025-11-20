@@ -133,7 +133,6 @@ namespace OnlineShop.Controllers
         }
         [HttpPost]
         [Route("adduserorregistration")]
-        [RoleAuthAtribute([1, 2, 3])]
         public async Task<IActionResult> CreateNewUserAndLoginAsync([FromBody] CreateNewUser newUser)
         {
             return await _shopService.CreateNewUserAndLoginAsync(newUser);

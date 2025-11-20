@@ -12,7 +12,7 @@ using OnlineShop.DataBaseContext;
 namespace OnlineShop.Migrations
 {
     [DbContext(typeof(ContextDb))]
-    [Migration("20251118102639_first")]
+    [Migration("20251120160553_first")]
     partial class first
     {
         /// <inheritdoc />

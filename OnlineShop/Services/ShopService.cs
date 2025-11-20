@@ -25,7 +25,20 @@ namespace OnlineShop.Services
             _jWTGenerator = generator;
             _httpContextAccessor = httpContextAccessor;
         }
-        
+        private async Task<int?> GetUserIdFromToken()
+        {
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return null;
+            }
+
+            var session = await _contextDb.Sessions
+                .FirstOrDefaultAsync(u => u.Token == token);
+
+            return session?.IdUser;
+        }
+
         public async Task<IActionResult> AuthUser(AuthUser logindata)
         {
             var user = await _contextDb.Logins.Include(l => l.user).FirstOrDefaultAsync(l => l.Password == logindata.Password && l.Login1 == logindata.Login);
@@ -39,12 +52,22 @@ namespace OnlineShop.Services
                 IdRole = user.user.IdRole,
                 IdUser = user.IdUser
             });
-            _contextDb.Sessions.Add(new Session { Token = token, IdUser = user.IdUser });
+
+            var newlog = new Log
+            {
+                IdAction = 1,
+                IdUser = user.IdUser,
+            };
+
+            await _contextDb.Sessions.AddAsync(new Session { Token = token, IdUser = user.IdUser });
+            await _contextDb.Logs.AddAsync(newlog);
             _contextDb.SaveChanges();
             return new OkObjectResult(new { token, status = true });
+
         }
         public async Task<IActionResult> CreateNewUserAndLoginAsync(CreateNewUser newUser)
         {
+           
             var login = new Login()
             {
                 user = new User()
@@ -54,15 +77,29 @@ namespace OnlineShop.Services
                     IdRole = 2,
                     Email = newUser.Email,
                     Address = newUser.Address,
-                    PhoneNumber = newUser.PhoneNumber
-
+                    PhoneNumber = newUser.PhoneNumber,
+                    createdat = DateTime.Now,
+                    updatedat = DateTime.Now
                 },
+                
                 Password = newUser.Password,
                 Login1 = newUser.Login
             };
 
             await _contextDb.AddAsync(login);
             await _contextDb.SaveChangesAsync();
+
+            var newlog = new Log
+            {
+                IdAction = 2,
+                IdUser = login.user.IdUser,
+            };
+
+            
+            await _contextDb.AddAsync(newlog);
+            await _contextDb.SaveChangesAsync();
+
+            
 
             return new OkObjectResult(new
             {
@@ -72,16 +109,48 @@ namespace OnlineShop.Services
 
         public async Task<IActionResult> GetAllUsersAsync()
         {
-            var users = await _contextDb.Users.FirstOrDefaultAsync();
+
+            
+
+            var userid = await GetUserIdFromToken();
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Пользователь с таким id не найден" });
+            }
+
+            var users = await _contextDb.Users.FirstOrDefaultAsync(u => u.IdUser == userid);
+
+
+            if (users == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Пользователей нет" });
+            }
+
+            var newlog = new Log
+            {
+                IdAction = 3,
+                IdUser = userid.Value,
+            };
+
+
+            await _contextDb.AddAsync(newlog);
+            await _contextDb.SaveChangesAsync();
+
             return new OkObjectResult(new
             {
                 data = new { users = users },
                 status = true
             });
+
         }
 
         public async Task<IActionResult> GetItems(GetItemsRequest getitem) //получить товары sort
         {
+            var userid = await GetUserIdFromToken();
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Пользователь с таким id не найден" });
+            }
 
             var query = _contextDb.Items.Include(i => i.category).AsQueryable();
 
@@ -113,6 +182,14 @@ namespace OnlineShop.Services
             {
                 return new NotFoundObjectResult(new { status = false, message = "Таких товаров нет" });
             }
+
+            var newlog = new Log
+            {
+                IdAction = 4,
+                IdUser = userid.Value,
+            };
+            await _contextDb.AddAsync(newlog);
+            await _contextDb.SaveChangesAsync();
 
             return new OkObjectResult(new
             {
@@ -152,14 +229,20 @@ namespace OnlineShop.Services
                 _contextDb.Baskets.Add(basket);
                 await _contextDb.SaveChangesAsync();
             }
-            
+
             var basketitem = new BasketItem()
             {
                 IdBasket = basket.IdBasket,
                 IdItem = additeminbasket.idtem,
                 Quantity = additeminbasket.quantity
             };
-            _contextDb.BasketItems.Add(basketitem);
+            var newlog = new Log
+            {
+                IdAction = 5,
+                IdUser = userid.IdUser,
+            };
+            await _contextDb.AddAsync(newlog);
+            await _contextDb.BasketItems.AddAsync(basketitem);
             await _contextDb.SaveChangesAsync();
             return new ObjectResult(new { status = true});
         }
@@ -183,7 +266,13 @@ namespace OnlineShop.Services
                 IdStatus = 1,
                 IdMethod = 1,
             };
-            _contextDb.Orders.AddAsync(neworder);
+            var newlog = new Log
+            {
+                IdAction = 6, // сделал заказ
+                IdUser = userid.IdUser,
+            };
+            await _contextDb.AddAsync(newlog);
+            await _contextDb.Orders.AddAsync(neworder);
             await _contextDb.SaveChangesAsync();
             return new ObjectResult(new {data = neworder, status = true });
         }
@@ -200,28 +289,79 @@ namespace OnlineShop.Services
                 return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
             }
             var orders = await _contextDb.Orders.Include(o => o.basket).Where(o => o.basket.IdUser == userid.IdUser).FirstOrDefaultAsync();
+            var newlog = new Log
+            {
+                IdAction = 7, // сделал заказ
+                IdUser = userid.IdUser,
+            };
+            await _contextDb.AddAsync(newlog);
+            await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new {data = orders, status = true});
         }
         public async Task<IActionResult> ChangeUserAndLogin(ChangeUser changeUser)
         {
-            var userid = _httpContextAccessor.HttpContext?.User;
-            var userIdClaim = int.Parse(userid?.FindFirst("UserId").Value);
-            var user = await _contextDb.Logins.Include(l => l.user).FirstOrDefaultAsync();
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
+            var user = await _contextDb.Logins.Include(l => l.user).FirstOrDefaultAsync(l => l.IdUser == userid.IdUser);
 
             user.user.PhoneNumber = changeUser.PhoneNumber;
             user.Login1 = changeUser.Login1;
             user.user.Description = changeUser.Description;
             user.user.Email = changeUser.Email;
+
+            var newlog = new Log
+            {
+                IdAction = 7, // изменил профиль
+                IdUser = userid.IdUser,
+            };
+            await _contextDb.AddAsync(newlog);
             await _contextDb.SaveChangesAsync();
+
             return new OkObjectResult(new { data = user, status = true });
         }
         public async Task<IActionResult> GetUser() //получить всех юзеров (менеджер и админ)
         {
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
             var users = await _contextDb.Users.FirstOrDefaultAsync();
+
+            var newlog = new Log
+            {
+                IdAction = 8, // изменил профиль
+                IdUser = userid.IdUser,
+            };
+            await _contextDb.AddAsync(newlog);
             return new OkObjectResult(new {data = users, status = true});
         }
         public async Task<IActionResult> ChangeUser(ChangeUser changeUser) //изменить юзера (менеджер)
         {
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
+
             var users = await _contextDb.Logins.Include(l => l.user).FirstOrDefaultAsync();
             users.user.PhoneNumber = changeUser.PhoneNumber;
             users.user.UserName = changeUser.UserName;
@@ -229,18 +369,54 @@ namespace OnlineShop.Services
             users.Login1 = changeUser.Login1;
             users.user.Email = changeUser.Email;
             users.user.Address = changeUser.Address;
+
+            var newlog = new Log
+            {
+                IdAction = 9, // изменил юзера
+                IdUser = userid.IdUser,
+            };
+            await _contextDb.AddAsync(newlog);
             await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new { data = users, status = true });
         }
         public async Task<IActionResult> DelUser(int iduser) // удалить юзера (менеджер)
         {
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
+
             var users = await _contextDb.Users.Include(u => u.IdUser == iduser).FirstOrDefaultAsync();
+
             _contextDb.Remove(users);
+            var newlog = new Log
+            {
+                IdAction = 10, // удалил юзера
+                IdUser = userid.IdUser,
+            };
+            await _contextDb.AddAsync(newlog);
             await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new {data = users, status = true });
         }
         public async Task<IActionResult> AddItems (ChangeItem changeItem) //добавить товар (менеджер)
         {
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
+
             var items = _contextDb.Items.FirstOrDefaultAsync();
             var newitem = new Item
             {
@@ -252,12 +428,29 @@ namespace OnlineShop.Services
                 isActive = changeItem.isActive,
                 createdat = DateTime.Now,
             };
-            _contextDb.Add(newitem);
+            var newlog = new Log
+            {
+                IdAction = 11, // добавил товар
+                IdUser = userid.IdUser,
+            };
+            await _contextDb.AddAsync(newlog);
+            await _contextDb.AddAsync(newitem);
             await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new { data = items, status = true });
         }
         public async Task<IActionResult> ChangeItem (ChangeItem changeItem) // изменить товар (менеджер)
         {
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
+
             var items = await _contextDb.Items.Where(i => i.IdItem == changeItem.IdItem).FirstOrDefaultAsync();
             items.IdCategory = changeItem.IdCategory;
             items.NameItem = changeItem.NameItem;
@@ -266,12 +459,38 @@ namespace OnlineShop.Services
             items.Stock = changeItem.Stock;
             items.isActive = changeItem.isActive;
             items.createdat = DateTime.Now;
+
+            var newlog = new Log
+            {
+                IdAction = 12, // изменил товар
+                IdUser = userid.IdUser,
+            };
+            await _contextDb.AddAsync(newlog);
             await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new { data = items, status = true });
         }
         public async Task<IActionResult> GetOrdersStatus() // получить заказы и их статусы
         {
+            string? token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (token == null)
+            {
+                return new BadRequestObjectResult(new { status = false, message = "Неправильный jwt" });
+            }
+            var userid = await _contextDb.Sessions.FirstOrDefaultAsync(u => u.Token == token);
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Ошибка" });
+            }
+
             var orders = _contextDb.Orders.Include(o => o.status).FirstOrDefaultAsync();
+
+            var newlog = new Log
+            {
+                IdAction = 13, // получить заказы и статусы
+                IdUser = userid.IdUser,
+            };
+            await _contextDb.AddAsync(newlog);
+            await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new { data = orders, status = true });
         }
         public async Task<IActionResult> ChangeOrders(ChangeOrderStatus changeOrderStatus) // изменить статус заказа 
@@ -355,7 +574,7 @@ namespace OnlineShop.Services
         }
         public async Task<IActionResult> GetLogs() // получить все логи пользователей
         {
-            var logs = await _contextDb.Sessions.FirstOrDefaultAsync();
+            var logs = await _contextDb.Logs.FirstOrDefaultAsync();
             return new OkObjectResult(new { data = logs, status = true });
         }
         
