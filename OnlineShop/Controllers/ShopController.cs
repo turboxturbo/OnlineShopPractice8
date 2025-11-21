@@ -27,7 +27,7 @@ namespace OnlineShop.Controllers
             return await _shopService.GetLogs();
         }
         [HttpPost]
-        [Route("adduser/admin")]
+        [Route("add/user/admin")]
         [RoleAuthAtribute([1])]
         public async Task<IActionResult> AddNewEmployee([FromBody] AddNewEmployee addemployee)
         {
@@ -149,6 +149,13 @@ namespace OnlineShop.Controllers
         public async Task<IActionResult> DelUser([FromBody] Delemployeerequest delemployeerequest)
         {
             return await _shopService.DelUser(delemployeerequest);
+        }
+        [HttpDelete]
+        [Route("del/item")]
+        [RoleAuthAtribute([1, 3])]
+        public async Task<IActionResult> DelItem([FromBody] DelItemReq delItem)
+        {
+            return await _shopService.DelItem(delItem);
         }
 
 

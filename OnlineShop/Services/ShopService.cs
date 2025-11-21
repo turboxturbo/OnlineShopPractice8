@@ -137,7 +137,6 @@ namespace OnlineShop.Services
             });
 
         }
-
         public async Task<IActionResult> GetItems(GetItemsRequest getitem) //получить товары sort
         {
             var userid = await GetUserIdFromToken();
@@ -688,7 +687,29 @@ namespace OnlineShop.Services
             await _contextDb.SaveChangesAsync();
             return new OkObjectResult(new { data = logs, status = true });
         }
-        
+        public async Task<IActionResult> DelItem(DelItemReq delItem)
+        {
+            var userid = await GetUserIdFromToken();
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Таких пользователей нет" });
+            }
+            var items = await _contextDb.Items.FirstOrDefaultAsync(i => i.IdItem == delItem.iditem);
+            if (items == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Нет предмета с таким id" });
+            }
+
+            _contextDb.Remove(items);
+            var newlog = new Log
+            {
+                IdAction = 20,
+                IdUser = userid.Value,
+            };
+            await _contextDb.Logs.AddAsync(newlog);
+            await _contextDb.SaveChangesAsync();
+            return new OkObjectResult(new {data = items, status = true });
+        }
 
     }
 }
