@@ -191,9 +191,34 @@ namespace OnlineShop.Services
             });
 
         }
+        public async Task<IActionResult> GetItemInBasket()
+        {
+            var userid = await GetUserIdFromToken();
+            if (userid == null)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Пользователь с таким id не найден" });
+            }
+
+            var items = await _contextDb.BasketItems.Include(b => b.basket).Include(b => b.item).Where(b => b.basket.IdUser == userid).ToListAsync();
+
+            if (items == null || items.Count == 0)
+            {
+                return new NotFoundObjectResult(new { status = false, message = "Товаров нет" });
+            }
+
+            var newlog = new Log
+            {
+                IdAction = 21,
+                IdUser = userid.Value,
+            };
+            await _contextDb.Logs.AddAsync(newlog);
+            await _contextDb.SaveChangesAsync();
+            return new ObjectResult(new { status = true, data = items });
+        }
         public async Task<IActionResult> AddItemInBasket(AddItemInBasketRequest additeminbasket)
         {
             var item = await _contextDb.Items.FirstOrDefaultAsync(i => i.IdItem == additeminbasket.idtem);
+
             var userid = await GetUserIdFromToken();
             if (userid == null)
             {
@@ -204,7 +229,7 @@ namespace OnlineShop.Services
             {
                 return new NotFoundObjectResult(new { status = false, message = "Такого товара нет" });
             }
-            var basket = await _contextDb.Baskets.FirstOrDefaultAsync(b => b.IdUser == userid);
+            var basket = await _contextDb.Baskets.OrderBy(b => b.IdBasket).LastOrDefaultAsync(b => b.IdUser == userid);
 
             if (basket == null)
             {
@@ -215,6 +240,21 @@ namespace OnlineShop.Services
 
                 await _contextDb.Baskets.AddAsync(basket);
                 await _contextDb.SaveChangesAsync();
+            }
+           
+            else
+            {
+                var order = await _contextDb.Orders.OrderByDescending(o => o.IdBasket).LastOrDefaultAsync(o => o.IdBasket == basket.IdBasket);
+                if (order != null)
+                {
+                    // Если заказ с этой корзиной уже существует - создаем НОВУЮ корзину
+                    basket = new Basket()
+                    {
+                        IdUser = userid.Value
+                    };
+                    await _contextDb.Baskets.AddAsync(basket);
+                    await _contextDb.SaveChangesAsync();
+                }
             }
 
             var basketitem = new BasketItem()
@@ -241,7 +281,7 @@ namespace OnlineShop.Services
             {
                 return new NotFoundObjectResult(new { status = false, message = "Пользователь с таким id не найден" });
             }
-            var basket = _contextDb.Baskets.FirstOrDefault(b => b.IdUser == userid);
+            var basket = _contextDb.Baskets.OrderBy(b => b.IdBasket).LastOrDefault(b => b.IdUser == userid);
             var neworder = new Order()
             {
                 IdBasket = basket.IdBasket,

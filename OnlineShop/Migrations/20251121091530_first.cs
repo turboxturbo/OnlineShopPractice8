@@ -306,8 +306,7 @@ namespace OnlineShop.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Baskets_IdUser",
                 table: "Baskets",
-                column: "IdUser",
-                unique: true);
+                column: "IdUser");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Items_IdCategory",

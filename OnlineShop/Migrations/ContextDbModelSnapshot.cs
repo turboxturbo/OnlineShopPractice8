@@ -52,8 +52,7 @@ namespace OnlineShop.Migrations
 
                     b.HasKey("IdBasket");
 
-                    b.HasIndex("IdUser")
-                        .IsUnique();
+                    b.HasIndex("IdUser");
 
                     b.ToTable("Baskets");
                 });

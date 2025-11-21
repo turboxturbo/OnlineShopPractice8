@@ -157,6 +157,13 @@ namespace OnlineShop.Controllers
         {
             return await _shopService.DelItem(delItem);
         }
+        [HttpGet]
+        [Route("get/itemsinbasket")]
+        [RoleAuthAtribute([1,2, 3])]
+        public async Task<IActionResult> GetItemInBasket()
+        {
+            return await _shopService.GetItemInBasket();
+        }
 
 
     }

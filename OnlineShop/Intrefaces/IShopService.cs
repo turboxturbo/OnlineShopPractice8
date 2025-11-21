@@ -26,6 +26,7 @@ namespace OnlineShop.Intrefaces
         Task<IActionResult> AuthUser(AuthUser logindata);
         Task<IActionResult> DelUser(Delemployeerequest delemployeerequest);
         Task<IActionResult> DelItem(DelItemReq delItem);
+        Task<IActionResult> GetItemInBasket();
 
     }
 }

@@ -12,7 +12,7 @@ using OnlineShop.DataBaseContext;
 namespace OnlineShop.Migrations
 {
     [DbContext(typeof(ContextDb))]
-    [Migration("20251120160553_first")]
+    [Migration("20251121091530_first")]
     partial class first
     {
         /// <inheritdoc />
@@ -55,8 +55,7 @@ namespace OnlineShop.Migrations
 
                     b.HasKey("IdBasket");
 
-                    b.HasIndex("IdUser")
-                        .IsUnique();
+                    b.HasIndex("IdUser");
 
                     b.ToTable("Baskets");
                 });

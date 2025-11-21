@@ -26,7 +26,6 @@ namespace OnlineShop.DataBaseContext
         {
             modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique(); // уникальность email
             modelBuilder.Entity<Login>().HasIndex(l => l.Login1).IsUnique(); // уникальность login
-            modelBuilder.Entity<Basket>().HasIndex(b => b.IdUser).IsUnique(); // уникальность в basket, 
         }
     }
 }
